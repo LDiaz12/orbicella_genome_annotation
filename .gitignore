@@ -1,0 +1,16 @@
+# Exclude entire Data folder
+Data/
+
+# Other large files
+*.fa
+*.fasta
+*.fna
+*.gbff
+*.mmi
+*.sam
+*.db
+*.RDataTmp
+*.RDataTmp1
+*.fai
+*.gff3_db
+allfileshas.txt
