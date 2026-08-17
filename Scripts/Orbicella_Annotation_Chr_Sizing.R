@@ -122,15 +122,6 @@ table(cut(chrom_sizes_oann_new$length_bp,
           breaks = c(0, 100000, 1000000, 10000000, Inf),
           labels = c("<100kb", "100kb-1Mb", "1Mb-10Mb", ">10Mb")))
 
-ggplot(chrom_sizes_oann_new, aes(x = 1:nrow(chrom_sizes_oann_new), y = length_bp)) +
-  geom_point(size = 0.5) +
-  geom_vline(xintercept = 15, color = "red", linetype = "dashed") +
-  scale_x_continuous(breaks = 1:20, limits = c(1,20)) +
-  labs(title = "O. annularis new pseudochromosome sizes",
-       x = "Sequence rank",
-       y = "Length (bp)") +
-  theme_classic()
-
 # Chromosome numbers 1:15 selected
 o_ann_chrom_new <- o_ann_pseudo_new_sorted[1:15]
 length(o_ann_chrom_new)
@@ -184,10 +175,13 @@ o_fav_pacbio_gff <- import(here("Data", "O_faveolata", "o_fav.gff3"))
 head(names(o_fav_pacbio), 10)
 head(unique(as.character(seqnames(o_fav_pacbio_gff))), 10)
 
-intersect(names(o_fav_pacbio), 
-          unique(as.character(seqnames(o_fav_pacbio_gff))))
-
 o_fav_pacbio_sorted <- o_fav_pacbio[order(width(o_fav_pacbio), decreasing = TRUE)]
+names(o_fav_pacbio_sorted) <- gsub(" .*", "", names(o_fav_pacbio_sorted))
+o_fav_pacbio_chrom <- o_fav_pacbio_sorted[1:15]
+length(o_fav_pacbio_chrom)
+sum(width(o_fav_pacbio_chrom))
+top15_pacbio <- names(o_fav_pacbio_chrom)
+
 o_fav_chrom_sizes_pacbio <- data.frame(
   chromosome = names(o_fav_pacbio_sorted),
   length_bp  = width(o_fav_pacbio_sorted)
@@ -202,10 +196,10 @@ table(cut(o_fav_chrom_sizes_pacbio$length_bp,
 # Plot to visualize
 # Create a rank column 
 o_fav_chrom_sizes_pacbio$rank <- 1:nrow(o_fav_chrom_sizes_pacbio)
-o_fav_plot <- ggplot(o_fav_chrom_sizes_pacbio, aes(x = rank, y = length_bp)) +
+o_fav_plot <- ggplot(o_fav_chrom_sizes_pacbio[1:20, ], aes(x = rank, y = length_bp)) +
   geom_point(size = 1.5) +
   geom_vline(xintercept = 15, color = "coral", linetype = "dashed") +
-  scale_x_continuous(breaks = 1:51) +
+  scale_x_continuous(breaks = 1:20) +
   labs(title = "O. faveolata PacBio assembly sequence sizes",
        x = "Sequence rank",
        y = "Length (bp)") +
@@ -274,3 +268,87 @@ cyphastrea_chr <- ggplot(cyph_chrom_sizes[1:20, ], aes(x = rank, y = length_bp))
   theme_classic()
 cyphastrea_chr # we should see a clear difference in size from the chromosomes and the rest of the sequences
 ggsave(plot = cyphastrea_chr, here("Outputs", "cyphastrea_sequence_sizes.png"))
+
+
+## Visualize chromosomal map ## 
+chrom_sizes_all <- rbind(
+  data.frame(species = "O. franksi", 
+             chromosome = names(o_fr_fasta_chrom),
+             length_bp = width(o_fr_fasta_chrom),
+             rank = 1:15),
+  data.frame(species = "O. annularis",
+             chromosome = names(o_ann_chrom_new),
+             length_bp = width(o_ann_chrom_new),
+             rank = 1:15),
+  data.frame(species = "O. faveolata",
+             chromosome = names(o_fav_pacbio_chrom),
+             length_bp = width(o_fav_pacbio_chrom),
+             rank = 1:15),
+  data.frame(species = "C. salae",
+             chromosome = names(c_sal_fasta_chrom),
+             length_bp = width(c_sal_fasta_chrom),
+             rank = 1:15)
+)
+nrow(chrom_sizes_all) # 60: 15 chr across 4 species
+head(chrom_sizes_all)
+
+chrom_sizes_all_plot <- ggplot(chrom_sizes_all, aes(x = rank, y = length_bp / 1e6, fill = species)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_continuous(breaks = 1:15) +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#CC79A7")) +
+  labs(title = "Chromosome sizes across 4 coral species",
+       x = "Chromosome rank",
+       y = "Length (Mb)",
+       fill = "Species") +
+  theme_classic() +
+  theme(legend.position = "bottom",
+        legend.text = element_text(face = "italic"))
+chrom_sizes_all_plot
+
+ggsave(plot = chrom_sizes_all_plot, here("Outputs", "chrom_sizes_all.png"))
+
+all_chrom_sizes_line <- ggplot(chrom_sizes_all, aes(x = rank, y = length_bp / 1e6, 
+                            color = species, group = species)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_x_continuous(breaks = 1:15) +
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#CC79A7")) +
+  labs(title = "Chromosome size profiles across 4 coral species",
+       x = "Chromosome rank",
+       y = "Length (Mb)",
+       color = "Species") +
+  theme_classic() +
+  theme(legend.position = "bottom",
+        legend.text = element_text(face = "italic"))
+all_chrom_sizes_line
+
+genome_sizes <- data.frame(
+  species = c("O. franksi", "O. annularis", "O. faveolata", "C. salae"),
+  total_size_mb = c(sum(width(o_fr_fasta_chrom)) / 1e6,
+                    sum(width(o_ann_chrom_new)) / 1e6,
+                    sum(width(o_fav_pacbio_chrom)) / 1e6,
+                    sum(width(c_sal_fasta_chrom)) / 1e6)
+)
+
+total_genome_size <- ggplot(genome_sizes, aes(x = species, y = total_size_mb, fill = species)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#CC79A7")) +
+  labs(title = "Total genome size across 4 coral species",
+       x = "Species",
+       y = "Total genome size (Mb)") +
+  theme_classic() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(face = "italic"))
+total_genome_size
+
+summary_table <- chrom_sizes_all %>%
+  group_by(species) %>%
+  summarise(
+    n_chromosomes = n(),
+    total_size_mb = round(sum(length_bp) / 1e6, 1),
+    largest_chr_mb = round(max(length_bp) / 1e6, 1),
+    smallest_chr_mb = round(min(length_bp) / 1e6, 1),
+    mean_chr_mb = round(mean(length_bp) / 1e6, 1)
+  )
+
+print(summary_table)

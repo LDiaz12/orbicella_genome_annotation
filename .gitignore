@@ -14,3 +14,4 @@ Data/
 *.fai
 *.gff3_db
 allfileshas.txt
+.Rproj.user
