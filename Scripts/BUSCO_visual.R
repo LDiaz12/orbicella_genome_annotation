@@ -33,7 +33,8 @@ busco_plot <- ggplot(busco_long, aes(x = species, y = Percentage, fill = Categor
   geom_text(aes(label = paste0(round(Percentage, 1), "%"),
                 vjust = vjust_val),
             position = position_stack(vjust = 0.5),
-            size = 3,
+            fontface = "bold", 
+            size = 5,
             color = "black") +
   scale_fill_manual(values = c("#56B4E9", "#009E73", "#F0E442", "#CC79A7"),
                     labels = c("Complete (duplicated)", "Complete (single)",
@@ -45,7 +46,11 @@ busco_plot <- ggplot(busco_long, aes(x = species, y = Percentage, fill = Categor
        fill = "Category") +
   theme_classic() +
   theme(legend.position = "bottom",
-        axis.text.y = element_text(face = "italic"))
+        axis.title.y = element_text(size = 12),
+        axis.title.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12, face = "italic"),
+        axis.text.x = element_text(size = 12),
+        legend.text = element_text(size = 12))
 busco_plot
 
 ggsave(plot = busco_plot, here("Outputs", "busco_plot.png"), width = 12, height = 8)

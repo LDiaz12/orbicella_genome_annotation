@@ -1,4 +1,4 @@
-## The following code was developed by Laurel C. Diaz on 6/22/2026
+# The following code was developed by Laurel C. Diaz on 6/22/2026
 ## This code is for the genome annotation for Orbicella corals 
 
 ## Load libraries 
