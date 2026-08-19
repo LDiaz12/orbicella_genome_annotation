@@ -15,3 +15,7 @@ Data/
 *.gff3_db
 allfileshas.txt
 .Rproj.user
+.RDataTmp*
+*.RData
+*.Rhistory
+orbicella_genome_data.tar.gz
